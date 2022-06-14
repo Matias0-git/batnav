@@ -3,11 +3,16 @@ package batnav.ui.screens;
 import batnav.instance.Game;
 import batnav.online.model.Ship;
 import batnav.ui.boards.ShipSelectionBoard;
+import batnav.ui.components.GameButton;
+import batnav.ui.components.GamePanel;
 import batnav.utils.Colour;
+import batnav.utils.Fonts;
 import com.google.common.collect.Lists;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,14 +26,24 @@ import java.util.List;
 public class ShipSelectionScreen extends JFrame implements ActionListener
 {
    protected List<Ship> ships;
-   protected Ship selectedShip;
+   private Ship selectedShip;
    private final ShipSelectionBoard shipSelectionBoard;
    protected ShipLabel currentLabel;
 
+
    public ShipSelectionScreen() throws IOException
    {
+      this.setSize(580, 520);
+      this.setLayout(new BorderLayout());
+      this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      this.setResizable(false);
+      this.setLocationRelativeTo(null);
+
+      this.setTitle("Posicioná tus barcos — batnav");
+
       this.ships = Lists.newArrayList();
       this.shipSelectionBoard = new ShipSelectionBoard(this);
+      this.setPreferredSize(new Dimension(380, 300));
 
       // Add ships.
       this.ships.add(new Ship(2));
@@ -40,58 +55,76 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
       this.ships.add(new Ship(4));
       this.ships.add(new Ship(5));
 
-      this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      this.setResizable(false);
+      final GamePanel gamePanel = new GamePanel();
+      JPanel southPanel = new JPanel();
+      JPanel eastPanel = new JPanel();
 
-      this.setSize(580, 490);
-      this.setLayout(new BorderLayout(0, 40));
+      gamePanel.setAlternative(true);
 
-      final JPanel panelEast = new JPanel(), panelSouth = new JPanel();
+      GameButton rotateButton = new GameButton("Rotar");
+      rotateButton.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Colour.Black, Colour.Black));
+      rotateButton.setMaximumSize(new Dimension(170, 30));
+      rotateButton.setFont(Fonts.displayMedium);
 
-      // Create a submit button.
-      final JButton okButton = new JButton();
-      okButton.setText("Aceptar");
-      okButton.setPreferredSize(new Dimension(100, 30));
-      okButton.addActionListener(this);
-      okButton.setActionCommand("setShips");
-
-      // Create the button that will be responsible for rotating the current selectedShip.
-      final JButton rotateButton = new JButton();
-      rotateButton.setSize(new Dimension(100, 10));
-      rotateButton.setText("Rotar");
       rotateButton.addActionListener(this);
       rotateButton.setActionCommand("rotateShip");
 
-      // Position components.
-      shipSelectionBoard.setPreferredSize(new Dimension(380, 300));
-      panelEast.setPreferredSize(new Dimension(150, 300));
-      panelSouth.setSize(new Dimension(600, 65));
+      JButton okButton = new JButton("Aceptar");
+      okButton.setFont(Fonts.displayMedium);
+      okButton.addActionListener(this);
+      okButton.setActionCommand("setShips");
 
-      // Add the correspondent Board MouseEvents.
-      this.shipSelectionBoard.addMouseListener(new BoardMouseEvent());
+      eastPanel.setPreferredSize(new Dimension(200, 300));
 
-      // Set layouts for the other components.
-      panelEast.setLayout(new GridLayout(9, 1));
-      panelSouth.setLayout(new BorderLayout());
+      southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+      southPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+      southPanel.add(okButton);
 
-      // Add ship labels into the east panel.
+      JPanel eastPanelTitleContainer = new JPanel();
+      eastPanelTitleContainer.setBackground(Colour.Transparent);
+      eastPanelTitleContainer.setOpaque(false);
+      eastPanelTitleContainer.setLayout(new BorderLayout(10, 10));
+      eastPanelTitleContainer.setSize(170, 20);
+
+      JLabel eastPanelTitle = new JLabel("<html></u>Barcos disponibles:</u></html>");
+      eastPanelTitle.setFont(Fonts.displayRegular.deriveFont(Font.BOLD));
+      eastPanelTitle.setHorizontalAlignment(JLabel.CENTER);
+      eastPanelTitle.setHorizontalTextPosition(JLabel.CENTER);
+
+      eastPanelTitleContainer.add(eastPanelTitle);
+
+      eastPanel.add(Box.createVerticalStrut(10));
+      eastPanel.add(eastPanelTitleContainer);
+      eastPanel.add(Box.createVerticalStrut(10));
+
       for (int i = 0; i < ships.size(); i++)
       {
-         ShipLabel shipLabel = new ShipLabel(i, ships.get(i));
-         panelEast.add(shipLabel);
-         shipLabel.addMouseListener(new MouseEvent());
+         ShipLabel jLabel = new ShipLabel(i, ships.get(i));
+         eastPanel.add(jLabel);
+         jLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+         jLabel.addMouseListener(new MouseEvent());
+         eastPanel.add(Box.createVerticalStrut(6));
       }
+      eastPanel.add(Box.createVerticalStrut(10));
 
-      // Add the buttons into the east panel.
-      panelEast.add(rotateButton);
-      panelSouth.add(okButton, BorderLayout.EAST);
+      eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
+      eastPanel.setSize(300, 100);
+      eastPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+      rotateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+      eastPanel.add(rotateButton);
 
-      // Add every panel to its correspondent location using the BorderLayout positioning methods.
-      this.add(this.shipSelectionBoard, BorderLayout.CENTER);
-      this.add(panelSouth, BorderLayout.SOUTH);
-      this.add(panelEast, BorderLayout.EAST);
+      eastPanel.setOpaque(false);
+      eastPanel.setBackground(Colour.Transparent);
+      southPanel.setOpaque(false);
+      southPanel.setBackground(Colour.Transparent);
 
-      // Finally, show the actual window.
+      this.shipSelectionBoard.addMouseListener(new BoardMouseEvent());
+
+      gamePanel.setLayout(new BorderLayout());
+      gamePanel.add(this.shipSelectionBoard, BorderLayout.CENTER);
+      gamePanel.add(southPanel, BorderLayout.SOUTH);
+      gamePanel.add(eastPanel, BorderLayout.EAST);
+      this.add(gamePanel);
       this.setVisible(true);
    }
 
@@ -102,93 +135,93 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
       switch (action)
       {
          case "rotateShip" ->
-                 {
-                    if (this.selectedShip.isVertical())
-                    {
-                       if (this.selectedShip.getX() >= 10 - this.selectedShip.getSize())
-                       {
-                          if (!coordinatesHasShip(
-                                  new int[]{10 - this.selectedShip.getSize(), this.selectedShip.getY()},
-                                  false, this.selectedShip))
-                          {
-                             this.selectedShip.setPosition(10 - this.selectedShip.getSize(), this.selectedShip.getY());
-                             this.selectedShip.setVertical(false);
-                          } else
-                          {
-                             JOptionPane.showMessageDialog(null,
-                                     "No se puede rotar a esa posición: ¡ya hay un barco!",
-                                     "Advertencia", JOptionPane.WARNING_MESSAGE);
-                          }
-                       } else
-                       {
-                          if (!coordinatesHasShip(
-                                  new int[]{this.selectedShip.getX(), this.selectedShip.getY()},
-                                  false, this.selectedShip))
-                          {
-                             this.selectedShip.setVertical(false);
-                          } else
-                          {
-                             JOptionPane.showMessageDialog(null,
-                                     "No se puede rotar a esa posición: ¡ya hay un barco!",
-                                     "Advertencia", JOptionPane.WARNING_MESSAGE);
-                          }
-                       }
-                    } else
-                    {
-                       if (this.selectedShip.getY() >= 10 - this.selectedShip.getSize())
-                       {
-                          if (!coordinatesHasShip(
-                                  new int[]{this.selectedShip.getX(), 10 - this.selectedShip.getSize()},
-                                  true, this.selectedShip))
-                          {
-                             this.selectedShip.setPosition(this.selectedShip.getX(), 10 - this.selectedShip.getSize());
-                             this.selectedShip.setVertical(true);
-                          } else
-                          {
-                             JOptionPane.showMessageDialog(null,
-                                     "No se puede rotar a esa posición: ¡ya hay un barco!",
-                                     "Advertencia", JOptionPane.WARNING_MESSAGE);
-                          }
-                       } else
-                       {
-                          if (!coordinatesHasShip(
-                                  new int[]{this.selectedShip.getX(), this.selectedShip.getY()},
-                                  true, this.selectedShip))
-                          {
-                             this.selectedShip.setVertical(true);
-                          } else
-                          {
-                             JOptionPane.showMessageDialog(null,
-                                     "No se puede rotar a esa posición: ¡ya hay un barco!",
-                                     "Advertencia", JOptionPane.WARNING_MESSAGE);
-                          }
-                       }
-                    }
-                    this.shipSelectionBoard.update();
-                 }
+         {
+            if (this.selectedShip.isVertical())
+            {
+               if (this.selectedShip.getX() >= 10 - this.selectedShip.getSize())
+               {
+                  if (!coordinatesHasShip(
+                       new int[]{10 - this.selectedShip.getSize(), this.selectedShip.getY()},
+                       false, this.selectedShip))
+                  {
+                     this.selectedShip.setPosition(10 - this.selectedShip.getSize(), this.selectedShip.getY());
+                     this.selectedShip.setVertical(false);
+                  } else
+                  {
+                     JOptionPane.showMessageDialog(null,
+                          "No se puede rotar a esa posición: ¡ya hay un barco!",
+                          "Advertencia", JOptionPane.WARNING_MESSAGE);
+                  }
+               } else
+               {
+                  if (!coordinatesHasShip(
+                       new int[]{this.selectedShip.getX(), this.selectedShip.getY()},
+                       false, this.selectedShip))
+                  {
+                     this.selectedShip.setVertical(false);
+                  } else
+                  {
+                     JOptionPane.showMessageDialog(null,
+                          "No se puede rotar a esa posición: ¡ya hay un barco!",
+                          "Advertencia", JOptionPane.WARNING_MESSAGE);
+                  }
+               }
+            } else
+            {
+               if (this.selectedShip.getY() >= 10 - this.selectedShip.getSize())
+               {
+                  if (!coordinatesHasShip(
+                       new int[]{this.selectedShip.getX(), 10 - this.selectedShip.getSize()},
+                       true, this.selectedShip))
+                  {
+                     this.selectedShip.setPosition(this.selectedShip.getX(), 10 - this.selectedShip.getSize());
+                     this.selectedShip.setVertical(true);
+                  } else
+                  {
+                     JOptionPane.showMessageDialog(null,
+                          "No se puede rotar a esa posición: ¡ya hay un barco!",
+                          "Advertencia", JOptionPane.WARNING_MESSAGE);
+                  }
+               } else
+               {
+                  if (!coordinatesHasShip(
+                       new int[]{this.selectedShip.getX(), this.selectedShip.getY()},
+                       true, this.selectedShip))
+                  {
+                     this.selectedShip.setVertical(true);
+                  } else
+                  {
+                     JOptionPane.showMessageDialog(null,
+                          "No se puede rotar a esa posición: ¡ya hay un barco!",
+                          "Advertencia", JOptionPane.WARNING_MESSAGE);
+                  }
+               }
+            }
+            this.shipSelectionBoard.update();
+         }
          case "setShips" ->
-                 {
-                    for (Ship ship : this.ships)
-                    {
-                       if (ship.getX() == null || ship.getY() == null)
-                       {
-                          JOptionPane.showMessageDialog(null,
-                                  "¡Todos los barcos deben tener posición!",
-                                  "Advertencia", JOptionPane.WARNING_MESSAGE);
-                          return;
-                       }
-                    }
-                    Game.getInstance().getMatchManager().setShips(
-                            Game.getInstance().getConnection(),
-                            this.ships
-                    );
-                    Game.getInstance().getMatchManager().getCurrentMatch().getMatchScreen().setVisible(true);
-                 }
+         {
+            for (Ship ship : this.ships)
+            {
+               if (ship.getX() == null || ship.getY() == null)
+               {
+                  JOptionPane.showMessageDialog(null,
+                       "¡Todos los barcos deben tener posición!",
+                       "Advertencia", JOptionPane.WARNING_MESSAGE);
+                  return;
+               }
+            }
+            Game.getInstance().getMatchManager().setShips(
+                 Game.getInstance().getConnection(),
+                 this.ships
+            );
+            Game.getInstance().getMatchManager().getCurrentMatch().getMatchScreen().setVisible(true);
+         }
       }
    }
 
 
-   private class ShipLabel extends JLabel
+   private static class ShipLabel extends JLabel
    {
       private final int id;
 
@@ -200,11 +233,14 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
        */
       private ShipLabel(int id, Ship ship) throws IOException
       {
+         int cubes = 170 / 5;
+
          final BufferedImage icon = ImageIO.read(new File("assets/ships/ship" + ship.getSize() + ".png"));
 
-         final int height = (150 / (icon.getWidth() / icon.getHeight()));
+         final int width = cubes * ship.getSize();
 
-         super.setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(150, height, Image.SCALE_DEFAULT)));
+         super.setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(width, cubes, Image.SCALE_SMOOTH)));
+
          this.id = id;
       }
 
@@ -228,15 +264,17 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
          // Get the Id. from the ShipLabel.
          int id = shipLabel.getId();
 
+         int cubes = 170 / 5;
+
          try
          {
             if (ShipSelectionScreen.this.getCurrentLabel() != null)
             {
+               final int width = cubes * ships.get(getCurrentLabel().id).getSize();
                final BufferedImage icon = ImageIO.read(new File("assets/ships/ship" +
                     ships.get(ShipSelectionScreen.this.getCurrentLabel().getId()).getSize() + ".png"));
-               final int height = (150 / (icon.getWidth() / icon.getHeight()));
 
-               getCurrentLabel().setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(150, height, Image.SCALE_DEFAULT)));
+               getCurrentLabel().setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(width, cubes, Image.SCALE_SMOOTH)));
             }
          } catch (IOException e)
          {
@@ -248,10 +286,10 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
 
          try
          {
+            final int width = cubes * ships.get(shipLabel.id).getSize();
             final BufferedImage icon = ImageIO.read(new File("assets/ships/ship" + ships.get(id).getSize() + "_selected.png"));
-            final int height = (150 / (icon.getWidth() / icon.getHeight()));
 
-            shipLabel.setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(150, height, Image.SCALE_DEFAULT)));
+            shipLabel.setIcon(new ImageIcon(new ImageIcon(icon).getImage().getScaledInstance(width, cubes, Image.SCALE_SMOOTH)));
          } catch (IOException e)
          {
             throw new RuntimeException(e);
@@ -296,7 +334,7 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
          if (ShipSelectionScreen.this.selectedShip == null)
          {
             JOptionPane.showMessageDialog(null, "¡Tenés que seleccionar un barco!",
-                    "Advertencia", JOptionPane.WARNING_MESSAGE);
+                 "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
          }
 
@@ -314,7 +352,7 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
             else
             {
                JOptionPane.showMessageDialog(null, "¡Ya hay un barco ocupando esa posición!",
-                       "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    "Advertencia", JOptionPane.WARNING_MESSAGE);
                return;
             }
 
@@ -413,9 +451,9 @@ public class ShipSelectionScreen extends JFrame implements ActionListener
       repaint();
    }
 
-   public void setCurrentLabel(ShipLabel currentLabel)
+   public void setCurrentLabel(ShipLabel selectedShip)
    {
-      this.currentLabel = currentLabel;
+      this.currentLabel = selectedShip;
    }
 
    public ShipLabel getCurrentLabel()

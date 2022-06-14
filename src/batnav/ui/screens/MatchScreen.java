@@ -5,7 +5,6 @@ import batnav.online.match.Match;
 import batnav.online.model.User;
 import batnav.ui.boards.OpponentBoard;
 import batnav.ui.boards.PlayerBoard;
-import batnav.ui.components.GamePanel;
 import batnav.utils.Colour;
 import batnav.utils.Fonts;
 
@@ -18,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -42,97 +42,117 @@ public class MatchScreen extends JFrame implements ActionListener
 
    public MatchScreen(final Match match)
    {
-      final boolean isOffline = Game.getInstance().getSessionManager() == null;
+      try
+      {
+         final boolean isOffline = Game.getInstance().getSessionManager() == null;
 
-      this.match = match;
+         this.match = match;
 
-      final GamePanel content = new GamePanel();
-      content.setLayout(new BorderLayout());
+         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-      this.opponentBoard = new OpponentBoard(this.match);
-      this.playerBoard = new PlayerBoard(this.match);
+         final JPanel content = new JPanel();
+         content.setLayout(new BorderLayout());
+         content.setBackground(new Colour(16, 74, 201));
 
-      this.opponentInfo = new JPanel();
-      this.playerInfo = new JPanel();
+         this.opponentBoard = new OpponentBoard(this.match);
+         opponentBoard.setOpaque(true);
+         opponentBoard.setBackground(new Colour(16, 74, 201));
+         this.playerBoard = new PlayerBoard(this.match);
+         playerBoard.setOpaque(true);
+         playerBoard.setBackground(new Colour(16, 74, 201));
 
-      opponentInfo.setBackground(Colour.Transparent);
-      playerInfo.setBackground(Colour.Transparent);
-      opponentBoard.setBackground(Colour.Transparent);
-      playerBoard.setBackground(Colour.Transparent);
+         this.opponentInfo = new JPanel();
+         opponentInfo.setBackground(new Colour(16, 74, 201));
+         this.playerInfo = new JPanel();
+         playerInfo.setBackground(new Colour(16, 74, 201));
 
-      this.middlePanel = new JPanel();
+         opponentBoard.setBackground(new Colour(16, 74, 201));
+         playerBoard.setBackground(new Colour(16, 74, 201));
 
-      this.opponentName = new JLabel(match.getOpponent().getUsername() + " (" + match.getOpponent().getElo() + ")");
-      this.playerName = new JLabel(isOffline ? "Yo (1000)" : (Game.getInstance().getConnection().getCurrentUser().getUsername() + " (" + Game.getInstance().getConnection().getCurrentUser().getElo() + ")"));
+         opponentBoard.setDisabled(true);
+         playerBoard.setDisabled(true);
 
-      opponentName.setFont(Fonts.displayTitle.deriveFont(14f));
-      playerName.setFont(Fonts.displayTitle.deriveFont(14f));
+         this.middlePanel = new JPanel();
 
-      playerName.setForeground(Colour.AliceBlue);
-      opponentName.setForeground(Colour.AliceBlue);
+         this.opponentName = new JLabel(match.getOpponent().getUsername() + " (" + match.getOpponent().getElo() + ")");
+         this.playerName = new JLabel(isOffline ? "Yo (1000)" : (Game.getInstance().getConnection().getCurrentUser().getUsername() + " (" + Game.getInstance().getConnection().getCurrentUser().getElo() + ")"));
 
-      this.opponentIcon = new ImageIcon("assets/textures/red_icon.png");
-      this.playerIcon = new ImageIcon("assets/textures/green_icon.png");
+         opponentName.setFont(Fonts.displayTitle.deriveFont(14f));
+         playerName.setFont(Fonts.displayTitle.deriveFont(14f));
 
-      this.counterLabel = new JLabel();
-      counterLabel.setText("88:88");
-      this.dFormat = new DecimalFormat("00");
+         playerName.setForeground(Colour.AliceBlue);
+         opponentName.setForeground(Colour.AliceBlue);
 
-      counterLabel.setFont(Fonts.displayMedium.deriveFont(20f));
-      counterLabel.setForeground(Colour.White);
+         this.opponentIcon = new ImageIcon(ImageIO.read(new File("assets/textures/red_icon.png")).getScaledInstance(30, 30, Image.SCALE_SMOOTH));
+         this.playerIcon = new ImageIcon(ImageIO.read(new File("assets/textures/green_icon.png")).getScaledInstance(30, 30, Image.SCALE_SMOOTH));
 
-      this.opponentflagPlaceholder = new JLabel();
-      this.playerFlagPlaceholder = new JLabel();
+         this.counterLabel = new JLabel();
+         this.dFormat = new DecimalFormat("00");
 
-      try {
-         this.playerFlagTexture = ImageIO.read(new URL("https://raw.githubusercontent.com/gosquared/flags/master/flags/flags-iso/flat/64/" + "AR" + ".png"));
-         this.opponentFlagTexture = ImageIO.read(new URL("https://raw.githubusercontent.com/gosquared/flags/master/flags/flags-iso/flat/64/" + match.getOpponent().getCountry() + ".png"));
-      } catch (IOException e) {
-         e.printStackTrace();
+         counterLabel.setFont(Fonts.displayMedium.deriveFont(18f));
+         counterLabel.setBackground(new Colour(24, 76, 204));
+         counterLabel.setOpaque(true);
+         counterLabel.setForeground(Colour.White);
+
+         this.opponentflagPlaceholder = new JLabel();
+         this.playerFlagPlaceholder = new JLabel();
+
+         try
+         {
+            this.playerFlagTexture = ImageIO.read(new URL("https://raw.githubusercontent.com/gosquared/flags/master/flags/flags-iso/flat/64/" + "AR" + ".png"));
+            this.opponentFlagTexture = ImageIO.read(new URL("https://raw.githubusercontent.com/gosquared/flags/master/flags/flags-iso/flat/64/" + match.getOpponent().getCountry() + ".png"));
+         } catch (IOException e)
+         {
+            e.printStackTrace();
+         }
+
+         Image playerFlagTextureScaled = playerFlagTexture.getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+         Image opponentFlagTextureScaled = opponentFlagTexture.getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+
+         this.playerFlagIcon = new ImageIcon(playerFlagTextureScaled);
+         this.opponentFlagIcon = new ImageIcon(opponentFlagTextureScaled);
+
+         this.opponentBoard.setPreferredSize(new Dimension(380, 290));
+         this.playerBoard.setPreferredSize(new Dimension(380, 290));
+
+         this.setSize(350, 720);
+         this.setLayout(new BorderLayout());
+         this.setResizable(false);
+
+         this.opponentInfo.setPreferredSize(new Dimension(350, 50));
+         this.opponentInfo.setBorder(new EmptyBorder(10, 10, 10, 10));
+         this.playerInfo.setPreferredSize(new Dimension(350, 50));
+         this.playerInfo.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+         this.opponentBoard.addMouseListener(new BoardMouseEvent());
+         middlePanel.setLayout(new GridLayout(2, 1));
+         middlePanel.setBackground(Colour.Transparent);
+         middlePanel.add(opponentBoard);
+         middlePanel.add(playerBoard);
+
+         this.opponentName.setIcon(opponentIcon);
+         this.opponentflagPlaceholder.setIcon(opponentFlagIcon);
+         this.opponentInfo.setLayout(new BorderLayout(10, 0));
+         this.opponentInfo.add(opponentName, BorderLayout.WEST);
+         this.opponentInfo.add(opponentflagPlaceholder);
+
+         this.playerName.setIcon(playerIcon);
+         this.playerFlagPlaceholder.setIcon(playerFlagIcon);
+         this.playerInfo.setLayout(new BorderLayout(10, 0));
+         this.playerInfo.add(playerName, BorderLayout.WEST);
+         this.playerInfo.add(playerFlagPlaceholder);
+         this.playerInfo.add(counterLabel, BorderLayout.EAST);
+
+         content.add(opponentInfo, BorderLayout.NORTH);
+         content.add(playerInfo, BorderLayout.SOUTH);
+         content.add(middlePanel, BorderLayout.CENTER);
+
+         this.add(content);
+
+      } catch (Exception e)
+      {
+         throw new RuntimeException(e);
       }
-
-      Image playerFlagTextureScaled = playerFlagTexture.getScaledInstance(15, 15, Image.SCALE_SMOOTH);
-      Image opponentFlagTextureScaled = opponentFlagTexture.getScaledInstance(15, 15, Image.SCALE_SMOOTH);
-
-      this.playerFlagIcon = new ImageIcon(playerFlagTextureScaled);
-      this.opponentFlagIcon = new ImageIcon(opponentFlagTextureScaled);
-
-      this.opponentBoard.setPreferredSize(new Dimension(380, 390));
-      this.playerBoard.setPreferredSize(new Dimension(380, 390));
-
-      this.setSize(350, 720);
-      this.setLayout(new BorderLayout());
-      this.setResizable(false);
-
-      this.opponentInfo.setPreferredSize(new Dimension(350, 50));
-      this.opponentInfo.setBorder(new EmptyBorder(10, 10, 10, 10) );
-      this.playerInfo.setPreferredSize(new Dimension(350, 50));
-      this.playerInfo.setBorder(new EmptyBorder(10, 10, 10, 10) );;
-
-      this.opponentBoard.addMouseListener(new BoardMouseEvent());
-      middlePanel.setLayout(new GridLayout(2, 1));
-      middlePanel.setBackground(Colour.Transparent);
-      middlePanel.add(opponentBoard);
-      middlePanel.add(playerBoard);
-
-      this.opponentName.setIcon(opponentIcon);
-      this.opponentflagPlaceholder.setIcon(opponentFlagIcon);
-      this.opponentInfo.setLayout(new BorderLayout(10,0));
-      this.opponentInfo.add(opponentName, BorderLayout.WEST);
-      this.opponentInfo.add(opponentflagPlaceholder);
-
-      this.playerName.setIcon(playerIcon);
-      this.playerFlagPlaceholder.setIcon(playerFlagIcon);
-      this.playerInfo.setLayout(new BorderLayout(10,0));
-      this.playerInfo.add(playerName, BorderLayout.WEST);
-      this.playerInfo.add(playerFlagPlaceholder);
-      this.playerInfo.add(counterLabel, BorderLayout.EAST);
-
-      content.add(opponentInfo, BorderLayout.NORTH);
-      content.add(playerInfo, BorderLayout.SOUTH);
-      content.add(middlePanel, BorderLayout.CENTER);
-
-      this.add(content);
 
       try
       {
@@ -151,7 +171,7 @@ public class MatchScreen extends JFrame implements ActionListener
 
    public void resetTimer()
    {
-      this.ddSecond = "30";
+      this.ddSecond = "45";
       counterLabel.setText("00:" + ddSecond);
       this.second = 0;
       timer.restart();
@@ -159,7 +179,7 @@ public class MatchScreen extends JFrame implements ActionListener
 
    public void startTimer()
    {
-      this.ddSecond = "30";
+      this.ddSecond = "45";
       this.second = 0;
 
       if (this.timer != null)
@@ -171,9 +191,13 @@ public class MatchScreen extends JFrame implements ActionListener
 
       this.timer = new Timer(1000, e -> {
          second++;
-         ddSecond = dFormat.format(30 - second);
+         ddSecond = dFormat.format(45 - second);
          counterLabel.setText("00:" + ddSecond);
-         if (second == 30)
+         counterLabel.repaint();
+         counterLabel.revalidate();
+         playerInfo.revalidate();
+         opponentInfo.revalidate();
+         if (second == 45)
          {
             timer.stop();
          }
@@ -250,6 +274,11 @@ public class MatchScreen extends JFrame implements ActionListener
       {
 
       }
+   }
+
+   public ShipSelectionScreen getShipSelectionScreen()
+   {
+      return shipSelectionScreen;
    }
 
    public OpponentBoard getOpponentBoard()

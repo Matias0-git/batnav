@@ -132,11 +132,13 @@ public class MatchManager
             this.getCurrentMatch().getMatchScreen().startTimer();
             this.getCurrentMatch().getMatchScreen().getPlayerBoard().setDisabled(true);
             this.getCurrentMatch().getMatchScreen().getOpponentBoard().setDisabled(false);
+            this.getCurrentMatch().getMatchScreen().repaint();
          } else
          {
             this.getCurrentMatch().getMatchScreen().startTimer();
             this.getCurrentMatch().getMatchScreen().getPlayerBoard().setDisabled(false);
             this.getCurrentMatch().getMatchScreen().getOpponentBoard().setDisabled(true);
+            this.getCurrentMatch().getMatchScreen().repaint();
          }
       } catch (JSONException e)
       {
@@ -229,7 +231,14 @@ public class MatchManager
       {
          final JSONObject response = Connection.decodePacket(json);
 
-         this.getCurrentMatch().getMatchScreen().setVisible(false);
+         Game.getInstance().getConnection().getCurrentUser().updateElo(response.getInt("elo"));
+         Game.getInstance().getConnection().getCurrentUser().updatePlays(1);
+         if (this.getCurrentMatch() != null && this.getCurrentMatch().getMatchScreen() != null)
+         {
+            this.getCurrentMatch().getMatchScreen().setVisible(false);
+            this.getCurrentMatch().getMatchScreen().getShipSelectionScreen().setVisible(false);
+         }
+         this.setCurrentMatch(null);
          new ResultsScreen(response.getBoolean("win"), response.getInt("elo"), response.getString("match"));
       } catch (Exception e)
       {

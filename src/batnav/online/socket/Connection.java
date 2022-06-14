@@ -6,7 +6,6 @@ import batnav.online.match.MatchManager;
 import batnav.notifications.Notification;
 import batnav.online.model.Packet;
 import batnav.online.session.SessionManager;
-import batnav.ui.screens.LoginScreen;
 import batnav.ui.screens.MainMenuScreen;
 import batnav.ui.screens.MatchScreen;
 import batnav.online.model.User;
@@ -132,6 +131,7 @@ public class Connection
             this.sessionManager.setAndSaveSessionId(null);
 
             Game.getInstance().getSplashScreen().setVisible(false);
+            Game.getInstance().getLoginScreen().showLoginPanel();
             Game.getInstance().getLoginScreen().setVisible(true);
          }
 
@@ -212,17 +212,11 @@ public class Connection
     */
    private void onDisconnect(final Object[] json)
    {
-      try
-      {
-         final JSONObject response = Connection.decodePacket(json);
-         Logger.log(response.toString());
-      } catch (JSONException e)
-      {
-         throw new RuntimeException(e);
-      }
-
       if (!this.disconnectionWasIssued)
       {
+         Game.getInstance().getMainMenuScreen().setVisible(false);
+         if(Game.getInstance().getMatchManager().getCurrentMatch() != null)
+            Game.getInstance().getMatchManager().getCurrentMatch().getMatchScreen().setVisible(false);
          JOptionPane.showMessageDialog(null,
               "Fuiste desconectado del servidor",
               "Advertencia", JOptionPane.ERROR_MESSAGE);
